@@ -1,0 +1,10 @@
+[package]
+name = "raytrace2020"
+version = "0.1.0"
+authors = ["Slashscreen"]
+edition = "2018"
+
+[dependencies]
+image = "0.21.1"
+piston_window = "0.93.0"
+bvh = "0.3.1"
