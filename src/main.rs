@@ -40,12 +40,12 @@ struct Triangle
     v3:Point
 }
 impl Triangle{
-    fn hits_ray (self,ray:bvh::ray::Ray) -> (bool,Point){
+    fn hits_ray (&self,ray:&bvh::ray::Ray) -> (bool,Point){
         //hits ray
         //arguments are self, bvh ray object, returns bool, Point object
         //vars
         let mut hit = false;
-        let points = self.to_points();
+        let points = &self.to_points();
         //calc intersection
         let res = ray.intersects_triangle(&points.0,&points.1,&points.2);
         //if distance is not +INFINITY, it hit the triangle
@@ -57,7 +57,7 @@ impl Triangle{
         let pos = Point{x:space_pos.x,y:space_pos.y,z:space_pos.z};
         return (hit,pos);
     }
-    fn to_points(self) -> (Point3<f32>,Point3<f32>,Point3<f32>){
+    fn to_points(&self) -> (Point3<f32>,Point3<f32>,Point3<f32>){
         //converts internal point types to point3
         //takes self as argument, returns tuple with 3 Point3
         return(Point3::new(self.v1.x,self.v1.y,self.v1.z),Point3::new(self.v2.x,self.v2.y,self.v2.z),Point3::new(self.v3.x,self.v3.y,self.v3.z));
@@ -94,7 +94,7 @@ fn render_pixel(u:f32, v:f32,c:&Camera,meshes:&Vec<Mesh>) -> image::Rgba<u8> {
     let r = Ray::new(c.origin,Vector3::new(v,u,0.0));
     for mesh in meshes.iter(){
         for tri in mesh.tris.iter(){
-            if tri.hits_ray(r).0{
+            if tri.hits_ray(&r).0{
                 return image::Rgba([(u*255.0) as u8,(v*255.0) as u8,0,255]); //if hit return UV for test.
             }
         }
