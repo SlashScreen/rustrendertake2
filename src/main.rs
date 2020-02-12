@@ -77,6 +77,25 @@ struct Mesh
     tris:Vec<Triangle>, //Array full of Triangle objects
     transform:Transform,
 }
+impl Mesh
+{
+    fn transform_point(&self,p:&Point)->Point{
+        let ox = p.x + self.transform.translation.x;
+        let oy = p.y + self.transform.translation.y;
+        let oz = p.z + self.transform.translation.z;
+        return Point{x:ox,y:oy,z:oz};
+    }
+    fn transform_triangles(&self)->Vec<Triangle>{
+        let mut out = Vec::new();
+        for t in &self.tris{
+            let n1 = self.transform_point(&t.v1);
+            let n2 = self.transform_point(&t.v2);
+            let n3 = self.transform_point(&t.v3);
+            out.push(Triangle{v1:n1,v2:n2,v3:n3});
+        }
+        return out;
+    }
+}
 //Camera - The camera object.
 #[allow(dead_code)]
 struct Camera 
@@ -91,7 +110,8 @@ struct Camera
 fn render_pixel(u:f32, v:f32,c:&Camera,meshes:&Vec<Mesh>) -> image::Rgba<u8> {
     //takes f32 u and v as arguments. Returns a color in RGBA.
     //creates a ray based on camera and UV position, and gets the color under that ray.
-    let r = Ray::new(c.origin,Vector3::new(v,u,0.0));
+    let r = Ray::new(c.origin,Vector3::new(v,u,1.0));
+
     for mesh in meshes.iter(){
         for tri in mesh.tris.iter(){
             if tri.hits_ray(&r).0{
