@@ -80,12 +80,15 @@ struct Mesh
 impl Mesh
 {
     fn transform_point(&self,p:&Point)->Point{
+        //translate
         let ox = p.x + self.transform.translation.x;
         let oy = p.y + self.transform.translation.y;
         let oz = p.z + self.transform.translation.z;
+        //return
         return Point{x:ox,y:oy,z:oz};
     }
-    fn transform_triangles(&self)->Vec<Triangle>{
+    fn apply_transform(&self)->Vec<Triangle>{
+        //returns vec of tris full of transformed tris
         let mut out = Vec::new();
         for t in &self.tris{
             let n1 = self.transform_point(&t.v1);
@@ -111,16 +114,20 @@ fn render_pixel(u:f32, v:f32,c:&Camera,meshes:&Vec<Mesh>) -> image::Rgba<u8> {
     //takes f32 u and v as arguments. Returns a color in RGBA.
     //creates a ray based on camera and UV position, and gets the color under that ray.
     let r = Ray::new(c.origin,Vector3::new(v,u,1.0));
-
     for mesh in meshes.iter(){
-        for tri in mesh.tris.iter(){
+        let transmesh = mesh.apply_transform();
+        for tri in transmesh.iter(){
             if tri.hits_ray(&r).0{
-                return image::Rgba([(u*255.0) as u8,(v*255.0) as u8,0,255]); //if hit return UV for test.
+                return image::Rgba([255,0,0,255]); //if hit return UV for test.
             }
         }
     }
     return image::Rgba([0,0,0,255]); //if nothing hit return black.
 }
+
+
+//MAIN//
+
 
 fn main() {
     //buffer
@@ -135,11 +142,17 @@ fn main() {
                 v1:Point{x:0.0,y:0.0,z:0.0},
                 v2:Point{x:0.0,y:1.0,z:0.0},
                 v3:Point{x:1.0,y:1.0,z:0.0}
+            },
+            Triangle
+            {
+                v1:Point{x:0.0,y:0.0,z:0.0},
+                v2:Point{x:0.0,y:-1.0,z:0.0},
+                v3:Point{x:-1.0,y:-1.0,z:1.0}
             }
         ],
         transform:Transform{
             rotation:Rotator{roll:0.0,pitch:0.0,yaw:0.0},
-            translation:Point{x:0.0,y:0.0,z:0.0}
+            translation:Point{x:1.0,y:1.0,z:2.0}
         }
     };
     let mut world_meshes = Vec::new();
