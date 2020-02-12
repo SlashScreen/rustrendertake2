@@ -88,12 +88,18 @@ struct Camera
 }
 //FUNCTIONS
 #[allow(dead_code)]
-fn render_pixel(u:f32, v:f32,c:&Camera) -> image::Rgba<u8> {
+fn render_pixel(u:f32, v:f32,c:&Camera,meshes:&Vec<Mesh>) -> image::Rgba<u8> {
     //takes f32 u and v as arguments. Returns a color in RGBA.
     //creates a ray based on camera and UV position, and gets the color under that ray.
     let r = Ray::new(c.origin,Vector3::new(v,u,0.0));
-
-    return image::Rgba([(u*255.0) as u8,(v*255.0) as u8,0,255]); //test return- hello world.
+    for mesh in meshes.iter(){
+        for tri in mesh.tris.iter(){
+            if tri.hits_ray(r).0{
+                return image::Rgba([(u*255.0) as u8,(v*255.0) as u8,0,255]); //if hit return UV for test.
+            }
+        }
+    }
+    return image::Rgba([0,0,0,255]); //if nothing hit return black.
 }
 
 fn main() {
@@ -101,13 +107,29 @@ fn main() {
     let mut frame_buffer = image::ImageBuffer::from_pixel(WIDTH, HEIGHT, image::Rgba([0,0,0,255]));
     //camera
     let cam = Camera{origin:Point3::new(0.0,0.0,-1.0),rotation:Rotator{roll:0.0,pitch:0.0,yaw:0.0},fov:90,perspective:true};
-    //HELLO WORLD- UV map
+    let plane = Mesh 
+    {   
+        tris : vec![
+            Triangle
+            {
+                v1:Point{x:0.0,y:0.0,z:0.0},
+                v2:Point{x:0.0,y:1.0,z:0.0},
+                v3:Point{x:1.0,y:1.0,z:0.0}
+            }
+        ],
+        transform:Transform{
+            rotation:Rotator{roll:0.0,pitch:0.0,yaw:0.0},
+            translation:Point{x:0.0,y:0.0,z:0.0}
+        }
+    };
+    let mut world_meshes = Vec::new();
+    world_meshes.push(plane);
+    //Render loop
     for x in 0..WIDTH{
         let u = x as f32/WIDTH as f32;
         for y in 0..HEIGHT{
             let v = y as f32/HEIGHT as f32;
-            //println!("{},{} - {},{} - {},{}",x,y,u,v,WIDTH,HEIGHT);
-            frame_buffer.put_pixel(x, y, render_pixel(u, v,&cam));
+            frame_buffer.put_pixel(x, y, render_pixel(u, v,&cam,&world_meshes));
         }
     }
     //Window stuff
